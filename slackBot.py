@@ -5,18 +5,22 @@ from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import datetime as dt
 import requests
+import random
+from time import sleep
 
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
+#This grabs the token from a local .env file so they aren't visible to the github repo
 SLACK_BOT_TOKEN = os.environ["OAUTH_TOKEN"]
 OAUTH_BOT_TOKEN = os.environ["SLACK_TOKEN"]
 API_KEY = os.environ["WEATHAPI_KEY"]
 BASE_URL = "http://api.openweathermap.org/data/2.5/weather?"
-
+#Initializes the bot application
 app = App(token=SLACK_BOT_TOKEN)
 
+#Grabs the weather data of the city you would like to know about
 def getCityWeatherData(city):
     try:
         url = BASE_URL + "appid=" + API_KEY + "&q=" + city
@@ -27,21 +31,23 @@ def getCityWeatherData(city):
         description = response['weather'][0]['description']
         sunriseTime = dt.datetime.utcfromtimestamp(response['sys']['sunrise'] + response['timezone'])
         sunsetTime = dt.datetime.utcfromtimestamp(response['sys']['sunset'] + response['timezone'])
-
         weatherAtLoc = f"Temperature in {city}: {tempC:.2f} degrees Celcius or {tempF:.2f} degrees Fahrenheit\nHumidity in {city}: {humidity}% \nGeneral Weather in {city}: {description}\nSunrise at {sunriseTime} in your timezone\nSunset at {sunsetTime} in your timezone"
     except:
-        weatherAtLoc = "Something went wrong. Try another city like London."
+        weatherAtLoc = "Something went wrong. Try another city like Texas."
     return weatherAtLoc
 
-
+#Functionthat changes kelvin to celsius and fahrenheit
 def kelvin_to_celsius_fahrenheit(kelvin):
     celsius = kelvin - 273.15
     fahrenheit = celsius * (9/5) + 32
     return celsius, fahrenheit
 
+
+
 @app.event("app_mention")
 def mention_handler(body, context, payload, options, say, event):
     textContent = payload['text'][15:]
+    
     try:
         botAction = textContent[:7]
         print(botAction)
@@ -53,6 +59,19 @@ def mention_handler(body, context, payload, options, say, event):
                 say(cityWeather)
             except:
                 say("Please add a city")
+        elif botAction[:4] == "help":
+            say("Welcome to TimerReminder!\nFunctions you may use include:\n     remind <amount of time till timer messages up to 999 seconds>\n     weather <city you want a weather report on>")
+        elif botAction[:6] == "remind":
+            try:
+                timetowait = int(textContent[6:10])
+                tC = textContent[10:]
+                print(timetowait)
+                say("Waiting for " + str(timetowait) + " seconds to remind to: " + tC)
+                sleep(timetowait)
+                say("<@" + payload['user'] +">" + " It has been " + str(timetowait) + " seconds. Remember to: " + tC)
+            except:
+                say("Please enter a valid integer number")
+            
         else:
             say("No valid command given")
     except:
