@@ -60,17 +60,27 @@ def mention_handler(body, context, payload, options, say, event):
             except:
                 say("Please add a city")
         elif botAction[:4] == "help":
-            say("Welcome to TimerReminder!\nFunctions you may use include:\n     remind <amount of time till timer messages up to 999 seconds>\n     weather <city you want a weather report on>")
-        elif botAction[:6] == "remind":
+            say("Welcome to TimerReminder!\nFunctions you may use include:\n     remindS <amount of time till timer messages up to 999 seconds>\n     remindM <amount of time till timer messages up to 999 minutes\n     weather <city you want a weather report on>")
+        elif botAction[:7] == "remindS":
             try:
-                timetowait = int(textContent[6:10])
-                tC = textContent[10:]
+                timetowait = int(textContent[7:11])
+                tC = textContent[11:]
                 print(timetowait)
                 say("Waiting for " + str(timetowait) + " seconds to remind to: " + tC)
                 sleep(timetowait)
                 say("<@" + payload['user'] +">" + " It has been " + str(timetowait) + " seconds. Remember to: " + tC)
             except:
-                say("Please enter a valid integer number")
+                say("Please enter a valid integer number 10 - 999 seconds")
+        elif botAction[:7] == "remindM":
+            try:
+                timetowait = int(textContent[7:11]) * 60
+                tC = textContent[11:]
+                print(timetowait)
+                say("Waiting for " + str(timetowait/60) + " minutes to remind to: " + tC)
+                sleep(timetowait)
+                say("<@" + payload['user'] +">" + " It has been " + str(timetowait/60) + " minutes. Remember to: " + tC)
+            except:
+                say("Please enter a valid integer number 10 - 999 minutes")
             
         else:
             say("No valid command given")
